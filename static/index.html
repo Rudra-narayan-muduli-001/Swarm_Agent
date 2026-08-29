@@ -3,21 +3,162 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Swarm Agent</title>
+  <meta name="color-scheme" content="dark" />
+  <title>Swarm Agent — Live Swarm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header>
-    <div class="title">Swarm Agent</div>
-    <div class="legend" id="legend"></div>
+  <!-- Header -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo" aria-hidden="true">
+        <span></span><span></span><span></span>
+        <span></span><span class="accent"></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <div class="brand">
+        <div class="brand-title">Swarm Agent</div>
+        <div class="brand-eyebrow">Live diagram · SSE swarm runtime</div>
+      </div>
+      <div class="pipeline-mini" aria-label="Pipeline">
+        <span class="mini-label">Pipeline</span>
+        <span class="mini-track">
+          <span class="mini-node honey">Planner</span>
+          <span class="mini-arrow">→</span>
+          <span class="mini-node sage">Researcher</span>
+          <span class="mini-arrow">→</span>
+          <span class="mini-node clay">Writer</span>
+        </span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="legend" id="legend" aria-label="Agent legend"></div>
+      <div class="session-badge" id="sessionBadge" title="Session id">no session</div>
+    </div>
   </header>
 
-  <main id="chat"></main>
+  <!-- App -->
+  <div class="app">
+    <!-- TRACE / DIAGRAM PANE -->
+    <section class="pane pane-trace" aria-label="Process trace">
+      <div class="pane-head">
+        <div class="pane-title">
+          <span class="pane-title-text">Process</span>
+          <span class="live-dot" id="liveDot" aria-hidden="true"></span>
+          <span class="live-label" id="liveLabel">idle</span>
+        </div>
+        <div class="pane-actions">
+          <button class="ghost-btn" id="clearTraceBtn" title="Clear trace view (session stays)">Clear view</button>
+        </div>
+      </div>
 
-  <footer>
-    <textarea id="input" rows="1" placeholder="Ask the swarm... (Enter to send, Shift+Enter for newline)"></textarea>
-    <button id="send">Send</button>
-  </footer>
+      <div class="trace-scroll" id="traceScroll">
+        <!-- Rail + Lanes -->
+        <div class="rail-wrap" id="railWrap">
+          <svg class="rail-svg" id="railSvg" width="28" aria-hidden="true"></svg>
+          <div class="lanes" id="lanes">
+            <!-- Empty state -->
+            <div class="empty-state" id="emptyState">
+              <div class="empty-diagram" aria-hidden="true">
+                <!-- Fallback architecture diagram (graphite + honey/sage/clay strokes) -->
+                <svg viewBox="0 0 520 148" width="100%" height="148" role="img">
+                  <rect x="12" y="18" rx="10" ry="10" width="118" height="38" fill="#232326" stroke="#343438"/>
+                  <text x="71" y="41" text-anchor="middle" font-size="11" font-weight="600" fill="#F2F0E7" font-family="Inter, system-ui">User message</text>
+                  <line x1="130" y1="37" x2="158" y2="37" stroke="#343438" stroke-width="1.5"/>
+                  <polygon points="158,33 168,37 158,41" fill="#343438"/>
+                  <rect x="168" y="18" rx="10" ry="10" width="128" height="38" fill="#1B1B1E" stroke="#27272A"/>
+                  <text x="232" y="37" text-anchor="middle" font-size="10" font-weight="600" fill="#9F9FA6" font-family="JetBrains Mono, monospace">FastAPI / SSE</text>
+                  <text x="232" y="48" text-anchor="middle" font-size="8" fill="#6B6B70" font-family="Inter">GET /api/chat</text>
+                  <line x1="296" y1="37" x2="324" y2="37" stroke="#343438" stroke-width="1.5"/>
+                  <polygon points="324,33 334,37 324,41" fill="#343438"/>
+                  <rect x="334" y="18" rx="10" ry="10" width="134" height="38" fill="#1B1B1E" stroke="#343438"/>
+                  <text x="401" y="37" text-anchor="middle" font-size="10" font-weight="600" fill="#E8B86A" font-family="Inter">run_swarm loop</text>
+                  <text x="401" y="48" text-anchor="middle" font-size="8" fill="#6B6B70" font-family="JetBrains Mono">app/core/runtime.py</text>
+
+                  <!-- agents row -->
+                  <rect x="48" y="88" rx="10" width="112" height="36" fill="#1B1B1E" stroke="#E8B86A"/>
+                  <circle cx="68" cy="106" r="6" fill="#E8B86A"/><text x="84" y="110" font-size="11" font-weight="600" fill="#F2F0E7" font-family="Inter">triage</text>
+                  <rect x="188" y="88" rx="10" width="126" height="36" fill="#1B1B1E" stroke="#7FC49A"/>
+                  <circle cx="208" cy="106" r="6" fill="#7FC49A"/><text x="224" y="110" font-size="11" font-weight="600" fill="#F2F0E7" font-family="Inter">researcher</text>
+                  <rect x="342" y="88" rx="10" width="98" height="36" fill="#1B1B1E" stroke="#E07A5F"/>
+                  <circle cx="362" cy="106" r="6" fill="#E07A5F"/><text x="378" y="110" font-size="11" font-weight="600" fill="#F2F0E7" font-family="Inter">writer</text>
+
+                  <!-- handoff arrows -->
+                  <path d="M160 106 H 188" stroke="#E8B86A" stroke-width="1.2" stroke-dasharray="4 5" fill="none"/>
+                  <polygon points="188,103 196,106 188,109" fill="#E8B86A"/>
+                  <path d="M314 106 H 342" stroke="#7FC49A" stroke-width="1.2" stroke-dasharray="4 5" fill="none"/>
+                  <polygon points="342,103 350,106 342,109" fill="#7FC49A"/>
+
+                  <!-- tools -->
+                  <rect x="198" y="132" rx="8" width="84" height="14" fill="#232326" stroke="#27272A"/>
+                  <text x="240" y="141.5" text-anchor="middle" font-size="7.5" fill="#7FC49A" font-family="JetBrains Mono">web_search</text>
+                  <rect x="290" y="132" rx="8" width="68" height="14" fill="#232326" stroke="#27272A"/>
+                  <text x="324" y="141.5" text-anchor="middle" font-size="7.5" fill="#E07A5F" font-family="JetBrains Mono">read_url</text>
+                </svg>
+              </div>
+              <div class="empty-copy">
+                <div class="empty-title">The swarm is idle.</div>
+                <div class="empty-text">Ask something research-y. You’ll see every handoff, tool call, and token stream right here — mapped to the rail on the left. No spinners, no black box.</div>
+                <div class="empty-hints">
+                  <span class="hint-chip">Try: “What are the latest solid-state battery breakthroughs? Write me a summary.”</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trace-footer" id="traceFooter">
+        <span class="footer-k">Runtime</span> <span class="footer-v">SSE · run_swarm</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-k">History</span> <span class="footer-v">40 msgs / lane</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-v" id="runCounter">0 runs</span>
+      </div>
+    </section>
+
+    <!-- CHAT PANE -->
+    <section class="pane pane-chat" aria-label="Conversation">
+      <div class="pane-head pane-head-chat">
+        <div class="pane-title">
+          <span class="pane-title-text">Conversation</span>
+          <span class="pane-subtitle" id="chatSubtitle">streaming grouped by agent</span>
+        </div>
+        <div class="pane-actions">
+          <span class="model-hint" id="modelHint" title="Model from .env">model: —</span>
+        </div>
+      </div>
+
+      <div class="chat-scroll" id="chat">
+        <!-- Greeting -->
+        <div class="bubble assistant greeting" id="greeting">
+          <div class="greeting-title">Swarm ready.</div>
+          <div class="greeting-body">I’m the Planner (triage). Tell me what to research and I’ll route to <span class="hl honey">Researcher</span> for web facts and <span class="hl clay">Writer</span> for a clean report — you’ll watch it happen on the left.</div>
+        </div>
+      </div>
+
+      <div class="composer-wrap">
+        <div class="composer">
+          <textarea id="input" rows="1" placeholder="Ask the swarm…  (Enter to send · Shift+Enter for newline)"></textarea>
+          <button id="send" class="send-btn">
+            <span class="send-label">Send</span>
+            <span class="send-icon" aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <div class="composer-meta">
+          <span>⏎ Send</span>
+          <span class="meta-sep">·</span>
+          <span>⇧⏎ New line</span>
+          <span class="meta-sep">·</span>
+          <span class="meta-muted">Session resumes when badge shows an id</span>
+          <span class="status" id="status"></span>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>
