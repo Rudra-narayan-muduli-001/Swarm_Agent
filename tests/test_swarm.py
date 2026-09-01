@@ -21,6 +21,21 @@ import uuid
 from pathlib import Path
 from unittest.mock import MagicMock, patch, call
 
+import warnings
+
+# Starlette's TestClient currently warns that `httpx`-based usage is deprecated
+# and asks for `httpx2` (which has no stable release). Silence it before the
+# import so collection does not emit a noisy warning.
+try:
+    from starlette.exceptions import StarletteDeprecationWarning
+    warnings.filterwarnings("ignore", category=StarletteDeprecationWarning)
+except ImportError:
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings(
+    "ignore",
+    message=r"Using `httpx` with `starlette.testclient`.*",
+)
+
 import pytest
 from fastapi.testclient import TestClient
 
