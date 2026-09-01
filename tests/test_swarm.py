@@ -452,7 +452,8 @@ class TestRuntime:
         assert any("unknown tool" in m["content"] for m in tool_msgs)
 
     def test_run_swarm_unknown_handoff_target(self):
-        from app.core.agent import Agent, handoff, ToolCall
+        from app.core.agent import Agent, handoff
+        from app.core.llm import ToolCall
         from app.core.runtime import run_swarm
         def bad_handoff(details: str) -> dict:
             return handoff("nonexistent")
@@ -466,7 +467,8 @@ class TestRuntime:
         assert any("unknown agent" in m["content"] for m in tool_msgs)
 
     def test_run_swarm_truncation(self):
-        from app.core.agent import Agent, ToolCall
+        from app.core.agent import Agent
+        from app.core.llm import ToolCall
         from app.core.runtime import run_swarm, MAX_TOOL_RESULT_CHARS
         def big_tool(x: str) -> str:
             return "A" * (MAX_TOOL_RESULT_CHARS + 100)
@@ -483,7 +485,8 @@ class TestRuntime:
         assert len(tr_events[0]["result"]) <= 500
 
     def test_run_swarm_tool_result_event_truncated_to_500(self):
-        from app.core.agent import Agent, ToolCall
+        from app.core.agent import Agent
+        from app.core.llm import ToolCall
         from app.core.runtime import run_swarm
         def t(x: str) -> str: return "B" * 1000
         ag = Agent(name="triage", instructions="sys", tools=[t])
@@ -525,7 +528,8 @@ class TestRuntime:
         assert captured_history["len"] == 41
 
     def test_run_swarm_last_handoff_wins(self):
-        from app.core.agent import Agent, handoff, ToolCall
+        from app.core.agent import Agent, handoff
+        from app.core.llm import ToolCall
         from app.core.runtime import run_swarm
         def h1(details: str): return handoff("researcher", details)
         def h2(details: str): return handoff("writer", details)
