@@ -1,6 +1,3 @@
-"""In-memory chat sessions. Idempotent GET-style API, so a session is
-created lazily and reused when the client passes its id back."""
-
 from __future__ import annotations
 
 import threading
