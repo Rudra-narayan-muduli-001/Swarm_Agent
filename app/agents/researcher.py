@@ -1,5 +1,3 @@
-"""Researcher agent — gathers facts from the web."""
-
 from __future__ import annotations
 
 from app.agents.triage import handoff_to_triage
@@ -25,8 +23,6 @@ or a different direction, hand off to the Planner (`handoff_to_triage`).
 
 
 def handoff_to_writer(details: str) -> dict:
-    """Hand off to the Writer agent to turn the research into a polished report. \
-Include your research summary, source URLs, and any format requirements."""
     return handoff("writer", details)
 
 
