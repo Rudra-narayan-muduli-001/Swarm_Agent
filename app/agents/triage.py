@@ -1,5 +1,3 @@
-"""Planner / triage agent — the entry point of the swarm."""
-
 from __future__ import annotations
 
 from app.core.agent import Agent, handoff
@@ -24,14 +22,10 @@ result to the user and ask if they need anything else.
 
 
 def handoff_to_researcher(details: str) -> dict:
-    """Hand off to the Researcher agent, who will gather information from the web. \
-Provide the full research task: topic, specific questions to answer, and any constraints."""
     return handoff("researcher", details)
 
 
 def handoff_to_writer(details: str) -> dict:
-    """Hand off to the Writer agent, who will produce a polished, structured report. \
-Provide the topic, the material to base the report on, and any format requirements."""
     return handoff("writer", details)
 
 
