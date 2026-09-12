@@ -30,8 +30,6 @@ def handoff_to_writer(details: str) -> dict:
 
 
 def handoff_to_triage(details: str) -> dict:
-    """Hand off back to the Planner agent. Use this when your task is complete, \
-you need clarification, or the next step is unclear. Include a short note describing what happened."""
     return handoff("triage", details)
 
 
