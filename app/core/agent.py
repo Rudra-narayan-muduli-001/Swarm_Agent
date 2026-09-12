@@ -1,11 +1,3 @@
-"""Agent definition and tool-schema helpers.
-
-An agent is just a name, a system prompt, an optional model override, and a
-list of Python functions it may call. Handoffs are ordinary tools whose
-return value is a dict like ``{"handoff": "agent_name"}`` — the runtime
-detects that and switches the active agent.
-"""
-
 from __future__ import annotations
 
 import inspect
@@ -40,11 +32,6 @@ _TYPE_MAP = {
 
 
 def function_to_schema(func: Tool) -> dict:
-    """Build an OpenAI-style function schema from a Python function.
-
-    Relies on type hints and the docstring. Parameters without a recognized
-    annotation default to ``string``.
-    """
     try:
         signature = inspect.signature(func)
     except (TypeError, ValueError):
@@ -78,7 +65,6 @@ def is_handoff(value: Any) -> bool:
 
 
 def handoff(target: str, context: str | None = None) -> dict:
-    """Return value for handoff tools."""
     payload = {HANDOFF_KEY: target}
     if context:
         payload["context"] = context
