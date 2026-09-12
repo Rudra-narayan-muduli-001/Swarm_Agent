@@ -1,7 +1,3 @@
-"""LiteLLM-backed streaming chat. Provider is chosen purely by the model
-string (e.g. ``gpt-4o-mini`` vs ``ollama/llama3.1``) plus the matching API
-key in the environment."""
-
 from __future__ import annotations
 
 import json
@@ -14,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from litellm import completion  # noqa: E402
+from litellm import completion
 
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
@@ -32,11 +28,6 @@ def resolve_model(agent) -> str:
 
 
 def llm_stream(agent, messages: list[dict], tools: list[dict], on_token: Callable[[str], None]):
-    """Stream one completion. Returns (content, [ToolCall]).
-
-    ``on_token`` is invoked for every text fragment as it arrives, so the UI
-    can stream tokens live while tool calls are collected in the background.
-    """
     kwargs = {
         "model": resolve_model(agent),
         "messages": messages,
