@@ -1,12 +1,3 @@
-"""Swarm Agent — FastAPI server.
-
-Serves the browser UI from /static and exposes two endpoints:
-- GET /api/agents   -> JSON list of agents
-- GET /api/chat     -> SSE stream of one swarm run (tokens, tool calls,
-                       agent handoffs). GET keeps the client-side
-                       EventSource API usable (no fetch streaming needed).
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -68,14 +59,13 @@ async def chat(session_id: str | None = None, message: str = "", agent: str | No
 
 
 async def _sse_stream(session, start_agent):
-    """Bridge the synchronous run loop (worker thread) to the async response."""
     queue: asyncio.Queue = asyncio.Queue()
     loop = asyncio.get_running_loop()
 
     def on_event(event: str, data: dict) -> None:
         try:
             loop.call_soon_threadsafe(queue.put_nowait, (event, data))
-        except RuntimeError:  # loop already closed (client disconnected)
+        except RuntimeError:
             pass
 
     task = asyncio.create_task(
