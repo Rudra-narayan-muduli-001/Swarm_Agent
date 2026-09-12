@@ -1,22 +1,3 @@
-"""The swarm run loop.
-
-An OpenAI-Swarm-style loop: call the active agent's LLM, execute any tool
-calls it makes, and keep going until it responds without tool calls. A tool
-result of ``{"handoff": "<agent_name>"}`` swaps the active agent mid-run —
-the loop persists across handoffs so a single user request can flow through
-several agents, all streamed over one connection.
-
-Events pushed via ``on_event(event, data)`` (thread-safe; the UI layer
-forwards them to an async queue):
-
-- ``agent``      {"name": ...}          the active agent changed
-- ``token``      {"content": ...}       streamed text fragment
-- ``tool_call``  {"tool": ..., "arguments": {...}, "agent": ...}
-- ``tool_result`` {"tool": ..., "result": ...}   truncated for display
-- ``error``      {"message": ...}
-- ``done``       {}                      always the last event
-"""
-
 from __future__ import annotations
 
 import json
@@ -36,12 +17,11 @@ def _tools_by_name(agent: Agent) -> dict[str, Callable]:
 def _execute(fn: Callable, args: dict) -> object:
     try:
         return fn(**args)
-    except Exception as exc:  # surface tool failures to the model
+    except Exception as exc:
         return {"error": f"{type(exc).__name__}: {exc}"}
 
 
 def run_swarm(session, start_agent: Agent, registry: dict[str, Agent], on_event: Callable) -> None:
-    """Run the loop for one user message. Mutates ``session.messages``."""
     messages = session.messages
     agent = start_agent
     try:
