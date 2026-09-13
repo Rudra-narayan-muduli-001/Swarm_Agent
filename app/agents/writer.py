@@ -1,5 +1,3 @@
-"""Writer agent — synthesizes research into a structured report."""
-
 from __future__ import annotations
 
 from app.agents.triage import handoff_to_triage
