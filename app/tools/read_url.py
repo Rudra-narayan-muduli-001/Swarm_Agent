@@ -1,5 +1,3 @@
-"""Fetch a web page and strip it down to plain text for LLM context."""
-
 from __future__ import annotations
 
 import httpx
@@ -10,11 +8,6 @@ STRIP_TAGS = ("script", "style", "nav", "footer", "header", "noscript", "form", 
 
 
 def read_url(url: str, max_chars: int = 8000) -> str:
-    """Fetch the page at `url` and return its readable text content.
-
-    Use this after web_search to read the actual content of promising pages.
-    The text is truncated to `max_chars` characters.
-    """
     try:
         response = httpx.get(
             url,
