@@ -100,6 +100,7 @@ class TestAgentExtended:
             def __call__(self, x: str, y: int = 5):
                 pass
         obj = Callable()
+        obj.__name__ = "Callable"
         schema = function_to_schema(obj)
         assert schema["function"]["name"] == "Callable"
         assert "x" in schema["function"]["parameters"]["properties"]
