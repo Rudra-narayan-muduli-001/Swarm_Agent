@@ -1,7 +1,3 @@
-"""Web search: Tavily if an API key is configured, otherwise DuckDuckGo
-(HTML endpoint scrape, no key required). Always fails soft — an error is
-returned to the model instead of crashing the run."""
-
 from __future__ import annotations
 
 import json
@@ -17,11 +13,6 @@ MAX_CHARS = 15_000
 
 
 def web_search(query: str, max_results: int = 5) -> str:
-    """Search the web for `query` and return a JSON list of {title, url, snippet} results.
-
-    Use this to answer questions about current events, facts, or anything that
-    changes over time. Always cite the returned URLs in your answer.
-    """
     max_results = max(1, min(int(max_results), 10))
     try:
         if os.getenv("TAVILY_API_KEY"):
