@@ -1,6 +1,3 @@
-"""The three research agents. Handoffs are tools that return
-``{"handoff": "<agent name>"}`` — the runtime switches agents on that."""
-
 from __future__ import annotations
 
 from app.agents.researcher import researcher_agent
