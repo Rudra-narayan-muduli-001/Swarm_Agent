@@ -1,10 +1,5 @@
 "use strict";
 
-/* Swarm Agent — diagrammatic SSE client
-   Contract per app/main.py:72 SSE events: session, agent, token, tool_call, tool_result, error, done
-   Diagram = rail + lanes (one per agent turn). Chat = grouped bubbles.
-*/
-
 const AGENT_COLORS = { triage: "#E8B86A", researcher: "#7FC49A", writer: "#E07A5F" };
 const AGENT_LABELS = { triage: "Planner", researcher: "Researcher", writer: "Writer" };
 const FALLBACK = "#9F9FA6";
@@ -31,12 +26,11 @@ let currentAgent = null;
 let runId = 0;
 let runCount = 0;
 let activeLane = null;
-let chatBubbleForLane = new Map(); // laneId -> bubble .content
-let pendingChips = []; // {tool, laneId, chipEl, resultEl}
+let chatBubbleForLane = new Map(); 
+let pendingChips = []; 
 let tokenQueue = "";
 let rafPending = false;
 
-// helpers
 function el(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -66,7 +60,6 @@ function setLive(state, label) {
   }
 }
 
-// boot: legend + model hint
 async function boot() {
   try {
     const res = await fetch("/api/agents");
@@ -91,12 +84,11 @@ async function boot() {
 }
 
 function hexSoft(hex, a) {
-  // hex #RRGGBB -> rgba
+  
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return `rgba(${r},${g},${b},${a})`;
 }
 
-// rail drawing — simple vertical spine with nodes
 function updateRail() {
   const lanes = lanesEl.querySelectorAll(".lane");
   if (!lanes.length) {
@@ -104,28 +96,28 @@ function updateRail() {
     railSvg.style.height = "320px";
     return;
   }
-  // compute Y for each lane centre relative to railWrap
+  
   const wrapRect = railWrap.getBoundingClientRect();
   const points = [];
   lanes.forEach((lane) => {
     const r = lane.getBoundingClientRect();
-    const y = (r.top - wrapRect.top) + r.height / 2 + traceScroll.scrollTop - 14; // 14 = trace padding top
-    // clamp
+    const y = (r.top - wrapRect.top) + r.height / 2 + traceScroll.scrollTop - 14; 
+    
     points.push(Math.max(20, y));
   });
   const h = Math.max(320, (points[points.length-1] || 0) + 40);
   railSvg.style.height = h + "px";
   railSvg.setAttribute("viewBox", `0 0 28 ${h}`);
   railSvg.setAttribute("height", h);
-  // build path
+  
   let svg = "";
-  // vertical spine
+  
   if (points.length > 1) {
     const pathD = points.map((y, i) => `${i===0?'M':'L'} 14 ${y}`).join(" ");
     const isDone = !busy;
     svg += `<path d="${pathD}" class="rail-segment ${busy ? 'active':'done'}" stroke-linecap="round"/>`;
   }
-  // nodes
+  
   lanes.forEach((lane, i) => {
     const y = points[i];
     const agent = lane.dataset.agent;
@@ -147,15 +139,14 @@ function updateRail() {
   railSvg.innerHTML = svg;
 }
 
-// lanes
 function ensureLane(agent) {
-  // hide empty
+  
   if (emptyState) emptyState.style.display = "none";
-  // if last lane is same agent and still active (streaming), reuse
+  
   if (activeLane && activeLane.dataset.agent === agent && activeLane.classList.contains("active")) {
     return activeLane;
   }
-  // deactivate previous
+  
   if (activeLane) {
     activeLane.classList.remove("active");
   }
@@ -180,7 +171,7 @@ function ensureLane(agent) {
   body.textContent = "";
 
   const toolList = el("div", "tool-list");
-  // keep refs
+  
   lane._body = body;
   lane._badge = badge;
   lane._toolList = toolList;
@@ -192,21 +183,21 @@ function ensureLane(agent) {
   lanesEl.appendChild(lane);
   activeLane = lane;
 
-  // also create chat bubble for this lane (grouped streaming)
+  
   const bubble = el("div", "bubble assistant");
   bubble.dataset.lane = String(Date.now()) + Math.random().toString(16).slice(2);
-  // tiny agent tag inside bubble
+  
   const tag = el("div", "agent-strip");
   const pill = el("span", "agent-pill", agent);
   pill.style.borderColor = agentColor(agent);
   pill.style.color = agentColor(agent);
-  // strip is outside bubble for cleaner look — insert strip then bubble
+  
   const strip = el("div", "agent-strip");
   strip.appendChild(pill);
   chatEl.appendChild(strip);
   bubble.appendChild(el("div", "content"));
   chatEl.appendChild(bubble);
-  // map lane -> bubble content
+  
   const content = bubble.querySelector(".content");
   chatBubbleForLane.set(lane, content);
 
@@ -235,7 +226,7 @@ function addRunSeparator(text) {
   line.style.letterSpacing = "0.04em";
   sep.appendChild(line);
   lanesEl.appendChild(sep);
-  // also chat gap
+  
   const csep = el("div", "agent-strip");
   csep.appendChild(el("span", "agent-pill", text));
   const pill = csep.querySelector(".agent-pill");
@@ -245,7 +236,6 @@ function addRunSeparator(text) {
   chatEl.appendChild(csep);
 }
 
-// tokens — batched via rAF to avoid layout thrash
 function appendTokens(fragment) {
   if (!fragment) return;
   tokenQueue += fragment;
@@ -268,11 +258,11 @@ function appendTokens(fragment) {
 function addToolCall(data) {
   const agent = data.agent || currentAgent || "triage";
   const lane = ensureLane(agent);
-  // ensure lane is visible
+  
   const chip = el("div", "tool-chip running");
   const head = el("div", "tool-chip-head");
   const name = el("span", "tool-chip-name", data.tool);
-  // color name by tool
+  
   if (data.tool === "web_search") name.style.color = "var(--sage)";
   else if (data.tool === "read_url") name.style.color = "var(--clay)";
   else if (String(data.tool).startsWith("handoff")) name.style.color = agentColor(agent);
@@ -284,7 +274,7 @@ function addToolCall(data) {
   const preview = argsText.length > 180 ? argsText.slice(0,180) + "…" : argsText;
   const argsEl = el("div", "tool-chip-args", preview);
   chip.appendChild(argsEl);
-  // placeholder result
+  
   const resultEl = el("div", "tool-chip-result collapsed");
   resultEl.style.display = "none";
   chip.appendChild(resultEl);
@@ -295,7 +285,7 @@ function addToolCall(data) {
 }
 
 function addToolResult(data) {
-  // find most recent pending chip with same tool that hasn't resolved
+  
   let idx = -1;
   for (let i = pendingChips.length - 1; i >= 0; i--) {
     if (pendingChips[i].tool === data.tool && pendingChips[i].chip.classList.contains("running")) {
@@ -303,7 +293,7 @@ function addToolResult(data) {
     }
   }
   if (idx === -1) {
-    // fallback: find any pending
+    
     idx = pendingChips.findIndex(p => p.tool === data.tool && p.chip.classList.contains("running"));
     if (idx === -1) return;
   }
@@ -316,7 +306,7 @@ function addToolResult(data) {
   const preview = resultText.slice(0, 900);
   entry.resultEl.textContent = preview + (resultText.length > 900 ? "\n…[truncated, click expand]" : "");
   entry.resultEl.style.display = "block";
-  // if handoff, also show in lane as handoff banner
+  
   if (String(data.tool).startsWith("handoff") || preview.toLowerCase().includes("handoff to")) {
     const banner = el("div", "lane-handoff");
     const arrow = el("span", "arrow", "→");
@@ -325,7 +315,7 @@ function addToolResult(data) {
     banner.appendChild(txt);
     entry.lane.appendChild(banner);
   }
-  // expand toggle
+  
   if (resultText.length > 220) {
     const btn = el("button", "chip-toggle", "Expand");
     btn.addEventListener("click", () => {
@@ -375,7 +365,6 @@ function setBusy(state) {
   }
 }
 
-// send
 function send() {
   const text = inputEl.value.trim();
   if (!text || busy) return;
@@ -389,10 +378,10 @@ function send() {
   tokenQueue = "";
   addUserMessage(text);
   addRunSeparator("Run #" + runCount + " · " + nowTime());
-  // reset input
+  
   inputEl.value = "";
   autoGrow();
-  // hide greeting after first send
+  
   const greet = document.getElementById("greeting");
   if (greet) greet.style.display = "none";
 
@@ -415,10 +404,10 @@ function send() {
       const d = JSON.parse(e.data);
       const name = d.name;
       if (currentAgent && name !== currentAgent) {
-        // mark previous done
+        
         if (activeLane) {
           activeLane.classList.remove("active");
-          // keep badge live until done
+          
         }
       }
       currentAgent = name;
@@ -453,7 +442,7 @@ function send() {
 
   es.addEventListener("done", () => {
     es.close();
-    // flush any pending tokens
+    
     if (tokenQueue) {
       const t = tokenQueue; tokenQueue = "";
       if (activeLane) {
@@ -462,9 +451,9 @@ function send() {
         if (cc) cc.textContent += t;
       }
     }
-    // mark active lane done
+    
     if (activeLane) markLaneDone(activeLane, "done");
-    // if bubble empty show placeholder
+    
     chatBubbleForLane.forEach((content) => {
       if (!content.textContent.trim()) content.textContent = "(no text — see trace for tool steps)";
     });
@@ -473,11 +462,10 @@ function send() {
   });
 
   es.onerror = () => {
-    // EventSource fires onerror on close; ignore if already done will be handled via done/error
+    
   };
 }
 
-// input handlers
 function autoGrow() {
   inputEl.style.height = "auto";
   inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + "px";
@@ -494,8 +482,8 @@ inputEl.addEventListener("input", autoGrow);
 sendBtn.addEventListener("click", send);
 
 clearTraceBtn.addEventListener("click", () => {
-  // keep last run separator style but clear lanes except empty state for visual reset
-  // we don't clear chat — only trace view per button label
+  
+  
   lanesEl.innerHTML = "";
   lanesEl.appendChild(emptyState);
   emptyState.style.display = "";
@@ -506,13 +494,11 @@ clearTraceBtn.addEventListener("click", () => {
   setLive("idle", "idle");
 });
 
-// resize observer for rail
 const ro = new ResizeObserver(() => updateRail());
 ro.observe(lanesEl);
 ro.observe(traceScroll);
 window.addEventListener("resize", () => updateRail());
 
-// boot
 boot();
 autoGrow();
 updateRail();
