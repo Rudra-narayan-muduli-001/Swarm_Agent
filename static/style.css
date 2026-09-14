@@ -1,5 +1,4 @@
-/* Swarm Agent — Dark Modern Clean
-   Tokens per design.md §3. Warm graphite + honey/sage/clay. No AI gradients. */
+
 
 :root {
   --bg-0: #0C0C0E;
@@ -56,7 +55,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ── Topbar ── */
+
 .topbar {
   height: 56px;
   min-height: 56px;
@@ -142,7 +141,7 @@ body {
   max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-/* ── App shell ── */
+
 .app {
   flex: 1;
   min-height: 0;
@@ -217,7 +216,7 @@ body {
   50% { box-shadow: 0 0 0 10px rgba(232,184,106,0.0); opacity: 0.9; }
 }
 
-/* ── Trace pane ── */
+
 .trace-scroll {
   flex: 1;
   min-height: 0;
@@ -240,7 +239,7 @@ body {
 }
 .lanes { display: flex; flex-direction: column; gap: 10px; }
 
-/* Empty state */
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -266,7 +265,7 @@ body {
   padding: 6px 10px;
 }
 
-/* Lanes */
+
 .lane {
   position: relative;
   background: var(--bg-2);
@@ -414,7 +413,7 @@ body {
 .footer-v { color: var(--ink-2); }
 .footer-sep { color: var(--line-strong); }
 
-/* ── Chat pane ── */
+
 .chat-scroll {
   flex: 1;
   min-height: 0;
@@ -545,14 +544,14 @@ body {
 .meta-muted { color: var(--ink-3); }
 .status { margin-left: auto; color: var(--ink-2); font-family: "JetBrains Mono", monospace; font-size: 11px; }
 
-/* Scrollbars (webkit) */
+
 .trace-scroll::-webkit-scrollbar, .chat-scroll::-webkit-scrollbar { width: 8px; }
 .trace-scroll::-webkit-scrollbar-thumb, .chat-scroll::-webkit-scrollbar-thumb {
   background: #2A2A2E; border-radius: 999px; border: 2px solid var(--bg-0);
 }
 .trace-scroll::-webkit-scrollbar-track, .chat-scroll::-webkit-scrollbar-track { background: transparent; }
 
-/* Rail animation */
+
 .rail-segment {
   stroke: var(--line-strong);
   stroke-width: 1.5;
@@ -562,10 +561,10 @@ body {
 .rail-segment.active { stroke: var(--honey); }
 .rail-segment.done { stroke: var(--line-strong); opacity: 0.7; }
 
-/* Utility */
+
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-/* ── Responsive ── */
+
 @media (max-width: 860px) {
   .app { grid-template-columns: 1fr; }
   .pane-trace { order: 1; max-height: 42vh; border-right: none; border-bottom: 1px solid var(--line); }
@@ -587,6 +586,6 @@ body {
   * { transition: none !important; }
 }
 
-/* Focus */
+
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .ghost-btn:focus-visible, .send-btn:focus-visible, #input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
